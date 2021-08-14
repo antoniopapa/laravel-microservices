@@ -1,0 +1,7 @@
+version: '3.9'
+services:
+  email_queue:
+    build: .
+    volumes:
+      - .:/app
+    command: 'php artisan queue:work'

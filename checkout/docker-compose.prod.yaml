@@ -1,0 +1,49 @@
+version: '3'
+services:
+  checkout_backend:
+    build: .
+    image: antoniopapa/checkout:0.0.1
+    environment:
+      DB_HOST:
+      DB_PORT: 3306
+      DB_DATABASE:
+      DB_USERNAME:
+      DB_PASSWORD:
+      KAFKA_QUEUE:
+      BOOTSTRAP_SERVERS:
+      SECURITY_PROTOCOL: SASL_SSL
+      SASL_USERNAME:
+      SASL_PASSWORD:
+      SASL_MECHANISMS: PLAIN
+      GROUP_ID:
+      QUEUE_CONNECTION: kafka
+      STRIPE_SECRET:
+      CHECKOUT_URL: http://localhost:5000
+      USERS_MS: users-backend:8001
+    ports:
+      - 8002:8000
+    command: >
+      sh -c "php artisan config:cache
+      && php artisan serve --host=0.0.0.0"
+
+  checkout_queue:
+    build: .
+    image: antoniopapa/checkout:0.0.1
+    environment:
+      DB_HOST:
+      DB_PORT: 3306
+      DB_DATABASE:
+      DB_USERNAME:
+      DB_PASSWORD:
+      KAFKA_QUEUE:
+      BOOTSTRAP_SERVERS:
+      SECURITY_PROTOCOL: SASL_SSL
+      SASL_USERNAME:
+      SASL_PASSWORD:
+      SASL_MECHANISMS: PLAIN
+      GROUP_ID: mygroup
+      QUEUE_CONNECTION: kafka
+      USERS_MS: users-backend:8001
+    command: >
+      sh -c "php artisan config:cache
+      && php artisan queue:work"

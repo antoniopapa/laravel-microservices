@@ -1,0 +1,178 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: ambassador-backend
+  name: ambassador-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ambassador-backend
+  template:
+    metadata:
+      labels:
+        io.kompose.service: ambassador-backend
+    spec:
+      containers:
+        - args:
+            - php
+            - artisan
+            - config:cache;
+            - php
+            - artisan
+            - serve
+            - --host=0.0.0.0
+          env:
+            - name: BOOTSTRAP_SERVERS
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: BOOTSTRAP_SERVERS
+            - name: CACHE_DRIVER
+              value: redis
+            - name: DB_DATABASE
+              value: ambassador
+            - name: DB_HOST
+              value:
+            - name: DB_PASSWORD
+              value: root
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USERNAME
+              value: root
+            - name: GROUP_ID
+              value: mygroup
+            - name: KAFKA_QUEUE
+              value: ambassador_topic
+            - name: QUEUE_CONNECTION
+              value: kafka
+            - name: SASL_MECHANISMS
+              value: PLAIN
+            - name: SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: SASL_PASSWORD
+            - name: SASL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: SASL_USERNAME
+            - name: SECURITY_PROTOCOL
+              value: SASL_SSL
+            - name: USERS_MS
+              value: users-backend:8001
+            - name: REDIS_HOST
+              value: redis
+            - name: REDIS_PASSWORD
+              value: null
+            - name: REDIS_PORT
+              value: 6379
+          image: antoniopapa/ambassador:0.0.1
+          name: ambassador-backend
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: ambassador-backend
+  name: ambassador-backend
+spec:
+  ports:
+    - name: "8003"
+      port: 8003
+      targetPort: 8000
+  selector:
+    io.kompose.service: ambassador-backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: ambassador-queue
+  name: ambassador-queue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ambassador-queue
+  template:
+    metadata:
+      labels:
+        io.kompose.service: ambassador-queue
+    spec:
+      containers:
+        - args:
+            - php
+            - artisan
+            - config:cache;
+            - php
+            - artisan
+            - serve
+            - --host=0.0.0.0
+          env:
+            - name: BOOTSTRAP_SERVERS
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: BOOTSTRAP_SERVERS
+            - name: CACHE_DRIVER
+              value: file
+            - name: DB_DATABASE
+              value: ambassador
+            - name: DB_HOST
+              value:
+            - name: DB_PASSWORD
+              value: root
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USERNAME
+              value: root
+            - name: GROUP_ID
+              value: mygroup
+            - name: KAFKA_QUEUE
+              value: ambassador_topic
+            - name: QUEUE_CONNECTION
+              value: kafka
+            - name: SASL_MECHANISMS
+              value: PLAIN
+            - name: SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: SASL_PASSWORD
+            - name: SASL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: SASL_USERNAME
+            - name: SECURITY_PROTOCOL
+              value: SASL_SSL
+            - name: USERS_MS
+              value: users-backend:8001
+            - name: REDIS_HOST
+              value: redis
+            - name: REDIS_PASSWORD
+              value: null
+            - name: REDIS_PORT
+              value: 6379
+          image: antoniopapa/ambassador:0.0.1
+          name: ambassador-queue
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+

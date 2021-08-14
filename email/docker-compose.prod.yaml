@@ -1,0 +1,20 @@
+version: '3'
+services:
+  email_queue:
+    build: .
+    image: antoniopapa/email:0.0.1
+    environment:
+      MAIL_MAILER: smtp
+      MAIL_HOST: smtp.mailtrap.io
+      MAIL_PORT:
+      MAIL_USERNAME:
+      MAIL_PASSWORD:
+      MAIL_ENCRYPTION: TLS
+      KAFKA_QUEUE:
+      BOOTSTRAP_SERVERS:
+      SECURITY_PROTOCOL: SASL_SSL
+      SASL_USERNAME:
+      SASL_PASSWORD:
+      SASL_MECHANISMS: PLAIN
+      GROUP_ID: 
+    command: 'php artisan queue:work'

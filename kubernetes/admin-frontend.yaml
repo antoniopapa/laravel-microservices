@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: admin-frontend
+  name: admin-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: admin-frontend
+  template:
+    metadata:
+      labels:
+        io.kompose.service: admin-frontend
+    spec:
+      containers:
+        - image: antoniopapa/admin-frontend:0.0.1
+          name: admin-frontend
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: admin-frontend
+  name: admin-frontend
+spec:
+  ports:
+    - name: "admin-frontend"
+      port: 3000
+      targetPort: 80
+  selector:
+    io.kompose.service: admin-frontend

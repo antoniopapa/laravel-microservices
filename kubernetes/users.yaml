@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: users-backend
+  name: users-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: users-backend
+  template:
+    metadata:
+      labels:
+        io.kompose.service: users-backend
+    spec:
+      containers:
+        - args:
+            - sh
+            - -c
+            - php artisan config:cache && php artisan serve --host=0.0.0.0
+          env:
+            - name: DB_DATABASE
+              value: users
+            - name: DB_HOST
+              value:
+            - name: DB_PASSWORD
+              value: root
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USERNAME
+              value: root
+          image: antoniopapa/users:0.0.1
+          name: users-backend
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: users-backend
+  name: users-backend
+spec:
+  ports:
+    - name: "8001"
+      port: 8001
+      targetPort: 8000
+  selector:
+    io.kompose.service: users-backend

@@ -1,0 +1,50 @@
+version: '3.9'
+services:
+  ambassador_backend:
+    build: .
+    ports:
+      - 8003:8000
+    volumes:
+      - .:/app
+    tty: true
+#    command: 'php artisan serve --host=0.0.0.0'
+    depends_on:
+      - ambassador_db
+    networks:
+      - ambassador
+      - users
+
+  ambassador_queue:
+    build: .
+    command: 'php artisan queue:work'
+    environment:
+      CACHE_DRIVER: file
+    depends_on:
+      - ambassador_db
+    networks:
+      - ambassador
+
+  ambassador_db:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_DATABASE: ambassador
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: root
+    volumes:
+      - ./storage/dbdata:/var/lib/mysql
+    networks:
+      - ambassador
+
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+    networks:
+      - ambassador
+
+networks:
+  users:
+    external:
+      name: users
+  ambassador:

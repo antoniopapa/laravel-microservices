@@ -1,0 +1,40 @@
+version: '3.9'
+services:
+  admin_backend:
+    build: .
+    ports:
+      - 8004:8000
+    volumes:
+      - .:/app
+    command: 'php artisan serve --host=0.0.0.0'
+    depends_on:
+      - admin_db
+    networks:
+      - admin
+      - users
+
+  admin_queue:
+    build: .
+    command: 'php artisan queue:work'
+    depends_on:
+      - admin_db
+    networks:
+      - admin
+
+  admin_db:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_DATABASE: admin
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: root
+    volumes:
+      - ./storage/dbdata:/var/lib/mysql
+    networks:
+      - admin
+
+networks:
+  users:
+    external:
+      name: users
+  admin:

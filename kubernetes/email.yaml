@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: email-queue
+  name: email-queue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: email-queue
+  template:
+    metadata:
+      labels:
+        io.kompose.service: email-queue
+    spec:
+      containers:
+        - args:
+            - php
+            - artisan
+            - queue:work
+          env:
+            - name: BOOTSTRAP_SERVERS
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: BOOTSTRAP_SERVERS
+            - name: GROUP_ID
+              value: mygroup
+            - name: KAFKA_QUEUE
+              value: email_topic
+            - name: MAIL_ENCRYPTION
+              value: TLS
+            - name: MAIL_HOST
+              value: smtp.mailtrap.io
+            - name: MAIL_MAILER
+              value: smtp
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mail-secrets
+                  key: MAIL_PASSWORD
+            - name: MAIL_PORT
+              value: "2525"
+            - name: MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mail-secrets
+                  key: MAIL_PASSWORD
+            - name: SASL_MECHANISMS
+              value: PLAIN
+            - name: SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: SASL_PASSWORD
+            - name: SASL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: SASL_USERNAME
+            - name: SECURITY_PROTOCOL
+              value: SASL_SSL
+          image: antoniopapa/email:0.0.1
+          name: email-queue
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"

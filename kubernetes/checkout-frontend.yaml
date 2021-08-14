@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: checkout-frontend
+  name: checkout-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: checkout-frontend
+  template:
+    metadata:
+      labels:
+        io.kompose.service: checkout-frontend
+    spec:
+      containers:
+        - image: antoniopapa/checkout-frontend:0.0.1
+          name: checkout-frontend
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: checkout-frontend
+  name: checkout-frontend
+spec:
+  ports:
+    - name: "checkout-frontend"
+      port: 3002
+      targetPort: 3000
+  selector:
+    io.kompose.service: checkout-frontend
